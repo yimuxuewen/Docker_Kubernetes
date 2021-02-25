@@ -1,0 +1,451 @@
+快速清空文件内容
+方法1、在非编辑状态下使用快捷键gg跳至首行头部，再使用dG即可。
+方法2、cat /dev/null > /var/log/yum.log（替换为需要清空内容文件名）
+方法3、> /var/log/yum.log（替换为需要清空内容文件名）
+
+WinSCP 显示隐藏文件夹
+直接使用 Ctrl + Alt + H 快捷键显示,按一次显示,再按则隐藏
+
+强制删除
+rm -rf /root/shell/.git
+
+
+
+查看当前Java进程
+ps -ef|grep java
+
+
+修改hostname 
+hostnamectl set-hostname hdss7-11.host.com
+
+
+编辑路由
+vi /etc/sysconfig/network-scripts/route-ens33
+
+
+修改ens33 配置
+vi /etc/sysconfig/network-scripts/ifcfg-ens33
+service network restart
+ping www.baidu.com
+
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=static
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=ens33
+UUID=11f4d571-9ecb-4333-876c-2b49193e4520
+DEVICE=ens33
+ONBOOT=yes
+ZONE=public
+IPADDR=10.4.7.8
+NETMASK=255.255.255.0
+GETEWAY=10.4.7.254
+DNS1=10.4.7.254
+PREFIX=24
+
+
+重启网络配置
+service network restart
+
+systemctl stop firewalld.service
+systemctl disable firewalld.service
+
+docker镜像仓库配置
+
+1、修改配置文件 vi /etc/docker/daemon.json
+
+  添加内容：
+
+{
+    "registry-mirrors": ["https://registry.docker-cn.com","https://mj9kvemk.mirror.aliyuncs.com"]
+}
+
+2.创建并修改完daemon.json文件后，需要让这个文件生效
+       修改完成后reload配置文件
+
+             sudo systemctl daemon-reload
+
+       重启docker服务
+
+            sudo systemctl restart   docker.service
+
+       查看状态
+
+            sudo systemctl status docker -l
+
+
+1.查看系统内docker
+
+docker-v
+
+2.启动docker
+
+service docker start
+
+3.开机自动启动 docker
+
+chkconfig docker on
+
+
+docker images 查看所有镜像
+docker images -q 查看所有镜像ID
+docker search redis 查看镜像所有版本
+docker pull redis:5.0 下载镜像 名称:版本
+docker rmi `docker images -q` 删除所有镜像
+docker rmi 5120d23bad51 删除指定ID的镜像
+docker run -it --name=cl centos:7 /bin/bash  一直运行centos版本为7 -it终端创建
+docker ps 查看当前运行的容器
+docker ps -a 查看历史容器
+docker run -id --name=c2 centos:7 后台创建一个容器，创建之后不运行，收到运行 exit退出，继续运行
+docker exec -it c2 /bin/bash 进入容器
+docker stop c2 关闭容器c2
+docker start c2 启动容器c2 
+docker rm c2 删除容器c2
+docker stop `docker ps -aq` 停止所有容器
+docker rm `docker ps -aq` 删除所有容器
+docker inspect c2 查看容器信息
+docker run -it --name=c3 -v /root/data:/root/data_container centos:7 /bin/bash   -v 宿主机目录:容器内目录
+docker run -it --name=c4 -v ~/data:/root/data_container centos:7 挂载现有容器数据卷
+docker run -it --name=c5 -v /root/data1:/root/data1_container -v /root/data2:/root/data2_container centos:7 一个容器创建多个数据卷
+docker run -it --name=c6 -v /volume centos:7 /bin/bash 配置数据卷容器
+docker run -it --name=c7 --volumes-from c6 centos:7 /bin/bash 设置挂载数据卷容器
+docker run -it --name=c8 --volumes-from c6 centos:7 /bin/bash 设置挂载数据卷容器
+docker commit 387892 my_ghost:1.0 容器转镜像
+docker save -o my_ghost.tar my_ghost:1.0 创建压缩文件
+docker load -i my_ghost.tar 根据压缩文件还原镜像
+docker stop $(docker ps -q) && docker rm $(docker ps -aq) 停止并删除所有容器
+tar --numeric-owner --exclude=/proc --exclude=/sys -cvf centos7-base.tar /   打包当前系统为镜像
+
+docker cp 81ffd966d942:/jd /    拷贝容器81ffd966d942根目录下的jd到宿主计算机跟目录
+
+
+
+dockerfile
+1.定义父镜像： FROM centos:7
+2.定义作者信息： MAINTAINER yang
+3.执行安装命令： RUN yum install -y vim
+4.定义默认的工作目录：WORKDIR /usr
+
+docker build -f ./centos_dockerfile -t my_centos:1 . 根据指定文件创建镜像
+
+docker build -f ./tomcat_dockerfile -t my_tomcat:1 .
+
+
+mysql镜像部署
+# 下载镜像
+docker pull mysql:5.7.26
+
+# 查看镜像
+docker images|grep mysql
+
+mkdir ~/mysql
+cd ~/mysql
+
+# 启动容器镜像，建议在/usr/local/workspace/mysql  下执行以下docker  run  命令
+docker run -id --name=my_mysql -p 3306:3306 -v $PWD/conf:/etc/mysql/conf.d -v $PWD/logs:/logs -v $PWD/data:/var/lib/data -e MYSQL_ROOT_PASSWORD=123456 mysql:5.7 /bin/bash
+
+命令说明：
+
+-p 3306:3306                      　　　　　　　　　　　 将容器的 3306 端口映射到主机的 3306 端口
+
+--name my-mysql                    　　　　　　　　 　　 启动后容器名为 my-mysql  
+
+-v $PWD/conf:/etc/mysql      　　　　　　　　           将主机当前目录下的 conf/ 挂载到容器的 /etc/mysql       （conf目录为mysql的配置文件，不挂载也没问题）
+
+-v $PWD/logs:/logs 　　　　　　　　　　　　　　　将主机当前目录下的 logs 目录挂载到容器的 /logs           （logs目录为mysql的日志目录，不挂载也没影响）
+
+-v $PWD/data:/var/lib/mysql 　　　　　　　　　　　将主机当前目录下的data目录挂载到容器的 /var/lib/mysql （data目录为mysql配置的数据文件存放路径，这个还是建议挂载，是存储数据的，容器down掉，还能再次挂载数据。）
+
+-e MYSQL_ROOT_PASSWORD=123456　　　　    初始化 root 用户的密码
+
+
+tomcat镜像部署
+
+mkdir tomcat
+cd ~/tomcat
+mkdir test
+vi index.html
+
+<h1>hello tomcat docker</h1>
+:wq
+docker run -id --name=yoyotomcat \
+-p 8090:8080 \
+-v $PWD:/usr/local/tomcat/webapps \
+tomcat
+
+
+docker run -id -p 8080:8080 --name=my_tomcat --privileged=true -v $PWD:/usr/local/tomcat/webapps tomcat /bin/bash
+启动
+cd /usr/local/tomcat/bin
+catalina.sh run
+
+
+部署nginx
+
+docker pull nginx:1.16.0
+
+#下载完成后查看镜像
+
+docker images|grep nginx
+
+mkdir ~/nginx
+cd ~/nginx
+mkdir cof
+挂载权限不足时，增加参数--privileged=true 
+
+docker run -id --name my-nginx \
+-p 8088:80 \
+--privileged=true \
+-v $PWD/conf/nginx.conf:/nginx/nginx.conf \
+-v $PWD/logs:/var/log/nginx \
+-v $PWD/html:/usr/share/nginx/html \
+nginx:1.16.0
+
+部署redis
+
+docker pull redis:5.0
+
+#下载完成后查看镜像
+docker images|grep redis
+
+docker run -id --name my-redis \
+-p 6379:6379 \
+redis:5.0
+
+使用外部机器连接Redis
+./redis-clis.exe -h 192.168.149.135 -p 6379
+
+
+
+基于原始文件和目录从0开始制作镜像；
+
+1)、基于CentOS7 Linux纯净系统（初始化安装完成），将Linux整个系统打包成tar文件即可；
+
+
+　　cd /root/
+
+
+　　tar --numeric-owner --exclude=/proc --exclude=/sys -cvf centos7-base.tar /
+
+
+　　ls
+
+2)、将制作完成的基础镜像拷贝至远程服务器，并且导入至Docker images列表中，导入命令如下：
+
+　　cat centos7-base.tar | docker import - centos7-mini2
+
+
+　　docker images
+
+3)、基于导入的CentOS镜像启动CentOS容器，命令如下：
+
+　　docker run -itd --name os7.6 centos7-mini2:latest /bin/bash 
+　　docker ps
+　　docker exec os7.6 cat /etc/redhat-release
+　　docker exec os7.6 ifconfig
+
+/usr/bin/vmware-toolbox-cmd disk shrink /
+
+虚拟机运行
+cat /dev/zero > zero.fill;sync;sleep 1;sync;rm -f zero.fill
+
+主机运行
+vmware-vdiskmanager.exe -k D:\Centos\CentOS 7 64 位-s001.vmdk
+
+修改文件夹权限
+chmod -R 777 ProductService/
+
+ cd /usr
+./consul agent -dev -client=192.168.19.130
+
+docker run -itd  -p 11500:8500/tcp --name consul docker.io/wdijkerman/consul agent -dev -client=0.0.0.0
+
+
+docker build -t microservice -f Microservicedockerfile .
+docker build -t productimg -f ProductServicedockerfile .
+
+docker run -itd -p 8082:8090 --name docker8082 productimg --health=8082
+
+
+docker run -itd -p 8080:8080 --privileged=true -v $PWD/config/appsettings5726.json:/Microservice/appsettings.json --name mymic microservice
+docker run -itd -p 5726:80 -v /root/docker-compose/config/appsettings5726.json:/Microservice/appsettings.json --name mymic microservice
+docker run -itd -p 8080:8080 --privileged=true -v $PWD/nginx/:/var/log/nginx/ -v $PWD/nginx/nginx.conf:/etc/nginx/nginx.conf --name mynginx docker.io/nginx:1.16.0
+
+chmod +x /root/nginx
+
+docker-compose安装
+拷贝 docker-compose到 /usr/local/bin/
+修改权限 chmod +x /usr/local/bin/docker-compose
+查看是否正常  docker-compose -v
+docker-compose在挂载文件时，需注意权限问题 增加    privileged: true
+启动  
+docker-compose up --remove-orphans --build
+
+
+consul集群
+查看节点
+docker exec -t node1 consul members
+查看主从信息
+docker exec -t node1 consul operator raft list-peers
+
+服务端三个节点
+docker run -d --name=node1 --restart=always -e 'CONSUL_LOCAL_CONFIG={"skip_leave_on_interrupt":true}' -p 8300:8300 -p 8301:8301 -p 8301:8301/udp -p 8302:8302/udp -p 8302:8302 -p 8400:8400 -p 8500:8500 -p 8600:8600 -h node1 consul agent -server -bind=0.0.0.0 -bootstrap-expect=3 -node=node1 -data-dir=/tmp/data-dir -client 0.0.0.0 -ui
+docker run -d --name=node2 --restart=always -e 'CONSUL_LOCAL_CONFIG={"skip_leave_on_interrupt":true}' -p 9300:8300 -p 9301:8301 -p 9301:8301/udp -p 9302:8302/udp -p 9302:8302 -p 9400:8400 -p 9500:8500 -p 9600:8600 -h node2 consul agent -server -bind=0.0.0.0 -join=172.17.0.2 -node-id=$(uuidgen | awk '{print tolower($0)}') -node=node2 -data-dir=/tmp/data-dir -client 0.0.0.0 -ui
+docker run -d --name=node3 --restart=always -e 'CONSUL_LOCAL_CONFIG={"skip_leave_on_interrupt":true}' -p 10300:8300 -p 10301:8301 -p 10301:8301/udp -p 10302:8302/udp -p 10302:8302 -p 10400:8400 -p 10500:8500 -p 10600:8600 -h node3 consul agent -server -bind=0.0.0.0 -join=172.17.0.2 -node-id=$(uuidgen | awk '{print tolower($0)}') -node=node3 -data-dir=/tmp/data-dir -client 0.0.0.0 -ui
+
+客户端
+docker run -d --name=node4 --restart=always -e 'CONSUL_LOCAL_CONFIG={"skip_leave_on_interrupt":true}' -p 11300:8300 -p 11301:8301 -p 11301:8301/udp -p 11302:8302/udp -p 11302:8302 -p 11400:8400 -p 11500:8500 -p 11600:8600 -h node4 consul agent -bind=0.0.0.0 -retry-join=172.17.0.2 -node-id=$(uuidgen | awk '{print tolower($0)}') -node=node4 -client 0.0.0.0 -ui
+docker run -d --name=node5 --restart=always -e 'CONSUL_LOCAL_CONFIG={"skip_leave_on_interrupt":true}' -p 12300:8300 -p 12301:8301 -p 12301:8301/udp -p 12302:8302/udp -p 12302:8302 -p 12400:8400 -p 12500:8500 -p 12600:8600 -h node5 consul agent -bind=0.0.0.0 -retry-join=172.17.0.2 -node-id=$(uuidgen | awk '{print tolower($0)}') -node=node5 -client 0.0.0.0 -ui
+
+yum install -y net-tools
+CentOS 7安装tunctl
+
+命令 ：cat << EOF > /etc/yum.repos.d/nux-misc.repo
+[nux-misc]
+name=Nux Misc
+baseurl=http://li.nux.ro/download/nux/misc/el7/x86_64/
+enabled=0
+gpgcheck=1
+gpgkey=http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
+EOF
+
+yum -y --enablerepo=nux-misc install tunctl
+
+添加虚拟网卡 tap0
+tunctl -t tap0 -u root
+
+
+解决docker容器间网络相同：
+宿主机设置为桥接模式，新建docker network(docker network create -d bridge --subnet 172.21.0.0/24 --gateway 172.21.0.1 root_default),保证两台宿主机里的容器IP不同
+在宿主机中在 /etc/sysconfig/network-scripts/下，新建文件名为route-ens33的文件,将现有路由规则添加进去（ip route），然后增加一条路由规则：ip route add 容器网段 via 目标宿主机 dev ens33 （ip route add 172.21.0.0/16 via 192.168.101.246 dev ens33 ）
+
+删除网络模式
+docker network rm root_default 
+查看网络模式详情
+docker network inspect root_default
+开启网络混合模式
+ip link set ens33 promisc on
+创建macvlan模式的网络模式
+docker network create -d macvlan --subnet 172.20.0.0/24 --gateway 172.20.0.1 -o parent=ens33 macvlan1
+
+
+将当前用户添加到docker用户组
+sudo groupadd docker
+sudo usermod -aG docker $USER
+
+
+k8s安装先行环境
+vi /etc/selinux/config 
+修改 SELINUX=disabled
+ 查看 docker info
+Cgroup Driver: systemd
+配置k8s的Cgroup Driver 
+vi /var/lib/kubelet/kubeadm-flags.env
+--cgroup-driver=systemd
+--runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice
+
+配置路由 
+vi /etc/sysctl.d/k8s.conf
+
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1  
+net.ipv4.ip_forward = 1
+vm.swappiness=0
+
+
+添加谷歌的yum源
+vi /etc/yum.repos.d/kubernetes.repo 
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+
+安装k8s
+yum install -y kubelet-1.13.1 kubeadm-1.13.1  kubectl-1.13.1 kubernetes-cni-0.6.0
+
+生成初始化配置文件 
+kubeadm config print init-defaults ClusterConfiguration>kubeadm.conf
+
+修改
+imageRepository:registry.cn-beijing.aliyuncs.com/imcto
+kubernetesVersion:v1.13.1
+advertiseAddress:192.168.101.245
+podSubnet:10.244.0.0/16
+serviceSubnet:10.96.0.0/12
+
+查看k8s需要的镜像文件
+kubeadm config images list --config kubeadm.conf
+下载需要的镜像
+kubeadm config images pull --config ./kubeadm.conf
+初始化k8s环境
+kubeadm init --config ./kubeadm.conf
+初始化失败之后，运行 kubeadm reset 在启动命令
+
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+systemctl enable kubelet.service
+systemctl start kubelet
+
+kubeadm join 192.168.101.245:6443 --token abcdef.0123456789abcdef --discovery-token-ca-cert-hash sha256:45d3e1a92d9e6193b5c912e43a86e38e3a74903d1bb5efe26175e2f8e77b1a61
+
+安装flannel
+yum install -y flannel
+
+获取flannel配置文件
+wget https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
+修改网络Network与kubeadm.conf中的podSubnet一致
+net-conf.json: |
+    {
+      "Network": "10.244.0.0/16",
+      "Backend": {
+        "Type": "vxlan"
+      }
+    }
+
+k8s应用flannel配置文件
+kubectl apply -f kube-flannel.yml
+
+k8s创建容器
+kubectl create -f mysql-dep.yaml
+k8s查看pods
+kubectl get pods --all-namespaces
+kubectl get pods
+k8s查看pods的详细信息
+kubectl describe pod mysql(pod名)
+论各种方式生成的pod, 均可以使用如下命令强制删除
+kubectl delete deployment|rc|rs $name
+kubectl delete pods <pod> --grace-period=0 --force
+kubectl delete ReplicationController(控制器类型) $name
+删除文件创建的容器
+kubectl delete -f mysql-dep.yaml
+kubectl delete -f kubernetes-dashboard.yaml
+查看日志
+kubectl logs kubernetes-dashboard-c647b7b-z7ds7 -n kube-system(容器所在命名空间)
+
+kubectl get all -n kube-system
+
+
+修改docker的cgroup驱动（不需要操作）
+ kubelet
+ 看到最后一行：error: failed to run Kubelet: failed to create kubelet: misconfiguration: kubelet cgroup driver: "cgroupfs" is different from docker cgroup driver: "systemd"
+
+
+vi /lib/systemd/system/docker.service
+ 将 --exec-opt native.cgroupdriver=systemd  修改为：
+  --exec-opt native.cgroupdriver=cgroupfs
+ systemctl daemon-reload 
+ systemctl restart docker.service
