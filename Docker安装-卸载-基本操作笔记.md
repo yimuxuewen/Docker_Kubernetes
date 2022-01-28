@@ -23,7 +23,15 @@ rm -rf /var/lib/docker #删除资源
 
 #### 1 安装工具包
 
-yum install -y yum-utils
+yum install -y yum-utils device-mapper-persistent-data lvm2
+
+修改yum-config-manager
+
+vi /usr/bin/yum-config-manager
+
+python改为python2
+#!/usr/bin/python2 -tt
+
 
 #### 2 设置镜像仓库
 
